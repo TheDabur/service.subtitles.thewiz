@@ -103,9 +103,15 @@ def GetJson(imdb,tvdb=0,season=0,episode=0):
 
 
 def _calc_rating(subsfile):
-	file_original_path = unquote(unicode(Player().getPlayingFile(), 'utf-8'))
-	file_name = path.basename(file_original_path)
-	folder_name = path.split(path.dirname(file_original_path))[-1]
+	if Player().isPlaying():	# Enable using subtitles search dialog when kodi is not playing
+		file_original_path = unquote(unicode(Player().getPlayingFile(), 'utf-8'))
+		file_name = path.basename(file_original_path)
+		folder_name = path.split(path.dirname(file_original_path))[-1]
+	else:
+		# fake strings to get "No Subtitles Found" when kodi is not playing
+		file_original_path = "NoSubtitlesFound"
+		file_name = "NoSubtitlesFound"
+		folder_name = "NoSubtitlesFound"
 
 	subsfile = sub(r'\W+', '.', subsfile).lower()
 	file_name = sub(r'\W+', '.', file_name).lower()
@@ -204,10 +210,13 @@ if action=='search':
 	imdb_id = 0
 	tvdb_id = 0
 	try:
-		playerid_query = '{"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 1}'
-		playerid = loads(executeJSONRPC(playerid_query))['result'][0]['playerid']
-		imdb_id_query = '{"jsonrpc": "2.0", "method": "Player.GetItem", "params": {"playerid": ' + str(playerid) + ', "properties": ["imdbnumber"]}, "id": 1}'
-		imdb_id = loads(executeJSONRPC (imdb_id_query))['result']['item']['imdbnumber']
+		if Player().isPlaying():	# Enable using subtitles search dialog when kodi is not playing
+			playerid_query = '{"jsonrpc": "2.0", "method": "Player.GetActivePlayers", "id": 1}'
+			playerid = loads(executeJSONRPC(playerid_query))['result'][0]['playerid']
+			imdb_id_query = '{"jsonrpc": "2.0", "method": "Player.GetItem", "params": {"playerid": ' + str(playerid) + ', "properties": ["imdbnumber"]}, "id": 1}'
+			imdb_id = loads(executeJSONRPC (imdb_id_query))['result']['item']['imdbnumber']
+		else:
+			imdb_id = "tt0"	# Avoid exception when kodi is not playing
 	except:	pass
 	if imdb_id[:2]=="tt":	#Simple IMDB_ID
 		GetJson(imdb_id,0,item['season'],item['episode'])
