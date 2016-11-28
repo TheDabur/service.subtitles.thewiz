@@ -32,7 +32,7 @@ def convert_to_utf(file):
 
 def normalizeString(str):
     return normalize('NFKD', unicode(unicode(str, 'utf-8'))).encode('utf-8', 'ignore')
-	
+
 def download(id):
 	try:
 		rmtree(__subs__)
@@ -191,21 +191,36 @@ if len(sys.argv) >= 2:
 
 if action=='search':
 	item = {}
-	item['year'] = getInfoLabel("VideoPlayer.Year")  # Year
 
-	item['season'] = str(getInfoLabel("VideoPlayer.Season"))  # Season
-	if item['season']=='' or item['season']<1:
-		item['season'] = 0
-	item['episode'] = str(getInfoLabel("VideoPlayer.Episode"))  # Episode
-	if item['episode']=='' or item['episode']<1:
-		item['episode'] = 0
+	if Player().isPlaying():
+		item['year'] = getInfoLabel("VideoPlayer.Year")  # Year
 
-	if item['episode']==0:
-		item['title'] = normalizeString(getInfoLabel("VideoPlayer.Title"))  # no original title, get just Title
-	else:	
-		item['title'] = normalizeString(getInfoLabel("VideoPlayer.TVshowtitle"))  # Show
-	if item['title'] == "":
-		item['title'] = normalizeString(getInfoLabel("VideoPlayer.OriginalTitle"))  # try to get original title
+		item['season'] = str(getInfoLabel("VideoPlayer.Season"))  # Season
+		if item['season']=='' or item['season']<1:
+			item['season'] = 0
+		item['episode'] = str(getInfoLabel("VideoPlayer.Episode"))  # Episode
+		if item['episode']=='' or item['episode']<1:
+			item['episode'] = 0
+
+		if item['episode']==0:
+			item['title'] = normalizeString(getInfoLabel("VideoPlayer.Title"))  # no original title, get just Title
+		else:	
+			item['title'] = normalizeString(getInfoLabel("VideoPlayer.TVshowtitle"))  # Show
+		if item['title'] == "":
+			item['title'] = normalizeString(getInfoLabel("VideoPlayer.OriginalTitle"))  # try to get original title
+	
+	else:	# Take item params from window when kodi is not playing
+		labelType = xbmc.getInfoLabel("ListItem.DBTYPE")  #movie/tvshow/season/episode
+		labelIMDB = xbmc.getInfoLabel("ListItem.IMDBNumber")
+		item['year'] = xbmc.getInfoLabel("ListItem.Year")
+		item['season'] = xbmc.getInfoLabel("ListItem.Season")
+		item['episode'] = xbmc.getInfoLabel("ListItem.Episode")
+		if labelType == 'movie':
+			item['title'] = xbmc.getInfoLabel("ListItem.OriginalTitle")
+		elif labelType == 'episode':
+			item['title'] = xbmc.getInfoLabel("ListItem.TVShowTitle")							
+		else:
+			item['title'] = "SearchFor..." # In order to show "No Subtitles Found" result.
 
 	imdb_id = 0
 	tvdb_id = 0
@@ -216,13 +231,22 @@ if action=='search':
 			imdb_id_query = '{"jsonrpc": "2.0", "method": "Player.GetItem", "params": {"playerid": ' + str(playerid) + ', "properties": ["imdbnumber"]}, "id": 1}'
 			imdb_id = loads(executeJSONRPC (imdb_id_query))['result']['item']['imdbnumber']
 		else:
-			imdb_id = "tt0"	# Avoid exception when kodi is not playing
+			if labelIMDB:
+				imdb_id = labelIMDB
+			else:
+				if labelType == 'movie':
+					imdb_id = "ThisIsMovie" #Search the movie by item['title'] for imdb_id 
+				elif labelType == 'episode':
+					imdb_id = "ThisIsEpisode" #Search by item['title'] for tvdb_id 
+				else:
+					imdb_id = "tt0"	# In order to show "No Subtitles Found" result => Doesn't recognize movie/episode
 	except:	pass
+
 	if imdb_id[:2]=="tt":	#Simple IMDB_ID
 		GetJson(imdb_id,0,item['season'],item['episode'])
 	else:
 		# Search TV Show by Title
-		if item['season'] != 0 or item['episode'] != 0:
+		if item['season'] or item['episode']:
 			try:
 				tvdb_id = urlopen("http://subs.thewiz.info/api.tvdb.php?name="+quote(item['title'])).read()
 				if tvdb_id<>'' and tvdb_id>100:
@@ -237,6 +261,7 @@ if action=='search':
 				if imdb_id[:2]=="tt":
 					GetJson(imdb_id,0,0,0)
 			except:	pass
+
 	# Search Local File
 	if not imdb_id and not tvdb_id:
 		ManualSearch(item['title'])
