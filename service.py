@@ -90,6 +90,38 @@ def GetJson(imdb,season=0,episode=0,version=0):
 			url = "plugin://%s/?action=download&versioname=%s&id=%s" % (__scriptid__, item_data["versioname"], item_data["id"])
 			addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=listitem,isFolder=False)
 
+<<<<<<< HEAD
+=======
+
+def _calc_rating(subsfile):
+	if Player().isPlaying():	# Enable using subtitles search dialog when kodi is not playing
+		file_original_path = unquote(unicode(Player().getPlayingFile(), 'utf-8'))
+		file_name = path.basename(file_original_path)
+		folder_name = path.split(path.dirname(file_original_path))[-1]
+	else:
+		# fake strings to get "No Subtitles Found" when kodi is not playing
+		file_original_path = "NoSubtitlesFound"
+		file_name = "NoSubtitlesFound"
+		folder_name = "NoSubtitlesFound"
+
+	subsfile = sub(r'\W+', '.', subsfile).lower()
+	file_name = sub(r'\W+', '.', file_name).lower()
+	folder_name = sub(r'\W+', '.', folder_name).lower()
+
+	subsfile = subsfile.split('.')
+	file_name = file_name.split('.')[:-1]
+	folder_name = folder_name.split('.')
+
+	if len(file_name) > len(folder_name):
+		diff_file = list(set(file_name) - set(subsfile))
+		rating = (1 - (len(diff_file) / float(len(file_name)))) * 5
+	else:
+		diff_folder = list(set(folder_name) - set(subsfile))
+		rating = (1 - (len(diff_folder) / float(len(folder_name)))) * 5
+
+	return round(rating, 1)
+
+>>>>>>> origin/master
 def SearchMovie(query,year):
 	filename = 'thewiz.search.movie.%s.%s.json'%(normalizeString(query),year)
 	if year>0:
@@ -157,6 +189,7 @@ MyLog("Action:%s"%action)
 
 if action=='search':
 	item = {}
+<<<<<<< HEAD
 	
 	MyLog("isPlaying:%s"%Player().isPlaying())
 	if Player().isPlaying():
@@ -169,15 +202,32 @@ if action=='search':
 		if item['episode']=='' or item['episode']<1:
 			item['episode'] = 0
 
+=======
+
+	if Player().isPlaying():
+		item['year'] = getInfoLabel("VideoPlayer.Year")  # Year
+
+		item['season'] = str(getInfoLabel("VideoPlayer.Season"))  # Season
+		if item['season']=='' or item['season']<1:
+			item['season'] = 0
+		item['episode'] = str(getInfoLabel("VideoPlayer.Episode"))  # Episode
+		if item['episode']=='' or item['episode']<1:
+			item['episode'] = 0
+
+>>>>>>> origin/master
 		if item['episode']==0:
 			item['title'] = normalizeString(getInfoLabel("VideoPlayer.Title"))  # no original title, get just Title
 		else:	
 			item['title'] = normalizeString(getInfoLabel("VideoPlayer.TVshowtitle"))  # Show
 		if item['title'] == "":
 			item['title'] = normalizeString(getInfoLabel("VideoPlayer.OriginalTitle"))  # try to get original title
+<<<<<<< HEAD
 		item['file_original_path'] = unquote(unicode(Player().getPlayingFile(), 'utf-8'))  # Full path of a playing file
 		item['file_original_path'] = item['file_original_path'].split("?")
 		item['file_original_path'] = path.basename(item['file_original_path'][0])[:-4]
+=======
+	
+>>>>>>> origin/master
 	else:	# Take item params from window when kodi is not playing
 		labelType = xbmc.getInfoLabel("ListItem.DBTYPE")  #movie/tvshow/season/episode
 		labelIMDB = xbmc.getInfoLabel("ListItem.IMDBNumber")
@@ -199,7 +249,10 @@ if action=='search':
 			playerid = loads(executeJSONRPC(playerid_query))['result'][0]['playerid']
 			imdb_id_query = '{"jsonrpc": "2.0", "method": "Player.GetItem", "params": {"playerid": ' + str(playerid) + ', "properties": ["imdbnumber"]}, "id": 1}'
 			imdb_id = loads(executeJSONRPC (imdb_id_query))['result']['item']['imdbnumber']
+<<<<<<< HEAD
 			MyLog("imdb JSONPC:%s"%imdb_id)
+=======
+>>>>>>> origin/master
 		else:
 			if labelIMDB:
 				imdb_id = labelIMDB
