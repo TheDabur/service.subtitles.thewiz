@@ -184,6 +184,8 @@ if action=='search':
 		item['year'] = xbmc.getInfoLabel("ListItem.Year")
 		item['season'] = xbmc.getInfoLabel("ListItem.Season")
 		item['episode'] = xbmc.getInfoLabel("ListItem.Episode")
+		item['file_original_path'] = ""
+
 		if labelType == 'movie':
 			item['title'] = xbmc.getInfoLabel("ListItem.OriginalTitle")
 		elif labelType == 'episode':
