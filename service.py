@@ -185,10 +185,12 @@ if action=='search':
 		item['season'] = xbmc.getInfoLabel("ListItem.Season")
 		item['episode'] = xbmc.getInfoLabel("ListItem.Episode")
 		item['file_original_path'] = ""
+		isItMovie = xbmc.getCondVisibility("Container.Content(movies)") or labelType == 'movie'
+		isItEpisode = xbmc.getCondVisibility("Container.Content(episodes)") or labelType == 'episode'
 
-		if labelType == 'movie':
+		if isItMovie:
 			item['title'] = xbmc.getInfoLabel("ListItem.OriginalTitle")
-		elif labelType == 'episode':
+		elif isItEpisode:
 			item['title'] = xbmc.getInfoLabel("ListItem.TVShowTitle")							
 		else:
 			item['title'] = "SearchFor..." # In order to show "No Subtitles Found" result.
@@ -206,9 +208,9 @@ if action=='search':
 			if labelIMDB:
 				imdb_id = labelIMDB
 			else:
-				if labelType == 'movie':
+				if isItMovie:
 					imdb_id = "ThisIsMovie" #Search the movie by item['title'] for imdb_id 
-				elif labelType == 'episode':
+				elif isItEpisode:
 					imdb_id = "ThisIsEpisode" #Search by item['title'] for tvdb_id 
 				else:
 					imdb_id = "tt0"	# In order to show "No Subtitles Found" result => Doesn't recognize movie/episode
