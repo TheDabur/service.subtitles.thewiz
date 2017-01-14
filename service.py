@@ -179,14 +179,26 @@ if action=='search':
 		item['file_original_path'] = item['file_original_path'].split("?")
 		item['file_original_path'] = path.basename(item['file_original_path'][0])[:-4]
 	else:	# Take item params from window when kodi is not playing
-		labelType = xbmc.getInfoLabel("ListItem.DBTYPE")  #movie/tvshow/season/episode
 		labelIMDB = xbmc.getInfoLabel("ListItem.IMDBNumber")
 		item['year'] = xbmc.getInfoLabel("ListItem.Year")
 		item['season'] = xbmc.getInfoLabel("ListItem.Season")
 		item['episode'] = xbmc.getInfoLabel("ListItem.Episode")
 		item['file_original_path'] = ""
-		isItMovie = xbmc.getCondVisibility("Container.Content(movies)") or labelType == 'movie'
-		isItEpisode = xbmc.getCondVisibility("Container.Content(episodes)") or labelType == 'episode'
+		labelType = xbmc.getInfoLabel("ListItem.DBTYPE")  #movie/tvshow/season/episode
+		if labelType:
+			if labelType == 'movie':
+				isItMovie = True
+				isItEpisode = False
+			elif labelType == 'episode':
+				isItMovie = False
+				isItEpisode = True
+		else:
+			if xbmc.getCondVisibility("Container.Content(movies)"):
+				isItMovie = True
+				isItEpisode = False
+			elif xbmc.getCondVisibility("Container.Content(episodes)"):
+				isItMovie = False
+				isItEpisode = True
 
 		if isItMovie:
 			item['title'] = xbmc.getInfoLabel("ListItem.OriginalTitle")
