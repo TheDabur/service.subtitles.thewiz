@@ -184,23 +184,9 @@ if action=='search':
 		item['season'] = xbmc.getInfoLabel("ListItem.Season")
 		item['episode'] = xbmc.getInfoLabel("ListItem.Episode")
 		item['file_original_path'] = ""
-		isItMovie = False
-		isItEpisode = False
-		labelType = xbmc.getInfoLabel("ListItem.DBTYPE")  #movie/tvshow/season/episode
-		if labelType:
-			if labelType == 'movie':
-				isItMovie = True
-				isItEpisode = False
-			elif labelType == 'episode':
-				isItMovie = False
-				isItEpisode = True
-		else:
-			if xbmc.getCondVisibility("Container.Content(movies)"):
-				isItMovie = True
-				isItEpisode = False
-			elif xbmc.getCondVisibility("Container.Content(episodes)"):
-				isItMovie = False
-				isItEpisode = True
+		labelType = xbmc.getInfoLabel("ListItem.DBTYPE")  #movie/tvshow/season/episode	
+		isItMovie = labelType == 'movie' or xbmc.getCondVisibility("Container.Content(movies)")
+		isItEpisode = labelType == 'episode' or xbmc.getCondVisibility("Container.Content(episodes)")
 
 		if isItMovie:
 			item['title'] = xbmc.getInfoLabel("ListItem.OriginalTitle")
