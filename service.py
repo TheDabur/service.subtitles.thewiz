@@ -179,16 +179,18 @@ if action=='search':
 		item['file_original_path'] = item['file_original_path'].split("?")
 		item['file_original_path'] = path.basename(item['file_original_path'][0])[:-4]
 	else:	# Take item params from window when kodi is not playing
-		labelType = xbmc.getInfoLabel("ListItem.DBTYPE")  #movie/tvshow/season/episode
 		labelIMDB = xbmc.getInfoLabel("ListItem.IMDBNumber")
 		item['year'] = xbmc.getInfoLabel("ListItem.Year")
 		item['season'] = xbmc.getInfoLabel("ListItem.Season")
 		item['episode'] = xbmc.getInfoLabel("ListItem.Episode")
 		item['file_original_path'] = ""
+		labelType = xbmc.getInfoLabel("ListItem.DBTYPE")  #movie/tvshow/season/episode	
+		isItMovie = labelType == 'movie' or xbmc.getCondVisibility("Container.Content(movies)")
+		isItEpisode = labelType == 'episode' or xbmc.getCondVisibility("Container.Content(episodes)")
 
-		if labelType == 'movie':
+		if isItMovie:
 			item['title'] = xbmc.getInfoLabel("ListItem.OriginalTitle")
-		elif labelType == 'episode':
+		elif isItEpisode:
 			item['title'] = xbmc.getInfoLabel("ListItem.TVShowTitle")							
 		else:
 			item['title'] = "SearchFor..." # In order to show "No Subtitles Found" result.
@@ -206,9 +208,9 @@ if action=='search':
 			if labelIMDB:
 				imdb_id = labelIMDB
 			else:
-				if labelType == 'movie':
+				if isItMovie:
 					imdb_id = "ThisIsMovie" #Search the movie by item['title'] for imdb_id 
-				elif labelType == 'episode':
+				elif isItEpisode:
 					imdb_id = "ThisIsEpisode" #Search by item['title'] for tvdb_id 
 				else:
 					imdb_id = "tt0"	# In order to show "No Subtitles Found" result => Doesn't recognize movie/episode
