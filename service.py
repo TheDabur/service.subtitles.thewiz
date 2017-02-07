@@ -39,7 +39,7 @@ def download(id):
 	except: pass
 	mkdirs(__subs__)
 	subtitle_list = []
-	exts = [".srt", ".sub"]
+	exts = [".srt", ".sub", ".str"]
 	archive_file = path.join(__temp__, 'thewiz.sub.'+id+'.zip')
 	if not path.exists(archive_file):
 		urlretrieve("http://subs.thewiz.info/zip/"+id+".zip", archive_file)
